@@ -29,7 +29,7 @@ class MarkovNetworkDeterministic(object):
 
     """A deterministic Markov Network for neural computing."""
 
-    def __init__(self, num_sensor_states, num_memory_states, num_output_states, num_markov_gates=4):
+    def __init__(self, num_sensor_states, num_memory_states, num_output_states, num_markov_gates=4, genome=None):
         """Sets up a randomly-generated deterministic Markov Network
 
         Parameters
@@ -43,39 +43,10 @@ class MarkovNetworkDeterministic(object):
         num_markov_gates: int (default: 4)
             The number of Markov Gates to seed the Markov Network with
             It is important to ensure that randomly-generated Markov Networks have at least a few Markov Gates to begin with
-
-        Returns
-        -------
-        None
-
-        """
-        self.num_sensor_states = num_sensor_states
-        self.num_memory_states = num_memory_states
-        self.num_output_states = num_output_states
-        self.states = np.zeros(num_sensor_states + num_memory_states + num_output_states)
-        self.markov_gates = []
-        self.genome = np.random.randint(0, 256, np.random.randint(1000, 5000))
-        
-        # Seed the random genome with num_markov_gates Markov Gates
-        for _ in range(num_markov_gates):
-            start_index = np.random.randint(0, int(len(self.genome) * 0.8))
-            self.genome[start_index] = 42
-            self.genome[start_index + 1] = 213
-
-    def __init__(self, num_sensor_states, num_memory_states, num_output_states, genome):
-        """Sets up a deterministic Markov Network using the provided genome
-
-        Parameters
-        ----------
-        num_sensor_states: int
-            The number of sensory input states that the Markov Network will use
-        num_memory_states: int
-            The number of internal memory states that the Markov Network will use
-        num_output_states: int
-            The number of output states that the Markov Network will use
-        genome: array-like
-            Array representation of the Markov Network
+        genome: array-like (optional)
+            An array representation of the Markov Network to construct
             All values in the array must be integers in the range [0, 255]
+            This option overrides the num_markov_gates option
 
         Returns
         -------
@@ -87,7 +58,17 @@ class MarkovNetworkDeterministic(object):
         self.num_output_states = num_output_states
         self.states = np.zeros(num_sensor_states + num_memory_states + num_output_states)
         self.markov_gates = []
-        self.genome = genome
+        
+        if genome is None:
+            self.genome = np.random.randint(0, 256, np.random.randint(1000, 5000))
+
+            # Seed the random genome with num_markov_gates Markov Gates
+            for _ in range(num_markov_gates):
+                start_index = np.random.randint(0, int(len(self.genome) * 0.8))
+                self.genome[start_index] = 42
+                self.genome[start_index + 1] = 213
+        else:
+            self.genome = genome
 
     def setup_markov_network(self):
         """Interprets the internal genome into the corresponding Markov Gates
@@ -150,3 +131,8 @@ class MarkovNetworkDeterministic(object):
 
         """
         return self.states[-self.num_output_states:]
+
+
+if __name__ == '__main__':
+    test = MarkovNetworkDeterministic(2, 4, 2)
+    print(max(test.genome))
