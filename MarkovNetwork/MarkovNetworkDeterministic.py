@@ -29,12 +29,12 @@ class MarkovNetworkDeterministic(object):
 
     """A deterministic Markov Network for neural computing."""
 
-    def __init__(self, num_sensor_states, num_memory_states, num_output_states, num_markov_gates=4, genome=None):
+    def __init__(self, num_input_states, num_memory_states, num_output_states, num_markov_gates=4, genome=None):
         """Sets up a randomly-generated deterministic Markov Network
 
         Parameters
         ----------
-        num_sensor_states: int
+        num_input_states: int
             The number of sensory input states that the Markov Network will use
         num_memory_states: int
             The number of internal memory states that the Markov Network will use
@@ -53,11 +53,13 @@ class MarkovNetworkDeterministic(object):
         None
 
         """
-        self.num_sensor_states = num_sensor_states
+        self.num_input_states = num_input_states
         self.num_memory_states = num_memory_states
         self.num_output_states = num_output_states
-        self.states = np.zeros(num_sensor_states + num_memory_states + num_output_states)
+        self.states = np.zeros(num_input_states + num_memory_states + num_output_states)
         self.markov_gates = []
+        self.markov_gate_input_ids = []
+        self.markov_gate_output_ids = []
         
         if genome is None:
             self.genome = np.random.randint(0, 256, np.random.randint(1000, 5000))
@@ -68,9 +70,11 @@ class MarkovNetworkDeterministic(object):
                 self.genome[start_index] = 42
                 self.genome[start_index + 1] = 213
         else:
-            self.genome = genome
+            self.genome = np.array(genome)
+            
+        self._setup_markov_network()
 
-    def setup_markov_network(self):
+    def _setup_markov_network(self):
         """Interprets the internal genome into the corresponding Markov Gates
 
         Parameters
@@ -82,7 +86,34 @@ class MarkovNetworkDeterministic(object):
         None
 
         """
-        pass
+        index_counter = 0
+        while index_counter < len(self.genome) - 2:
+            # Sequence of 42 then 213 indicates a new Markov Gate
+            if self.genome[index_counter] == 42 and self.genome[index_counter + 1] == 213:
+                index_counter += 2
+                
+                # Determine the number of inputs and outputs for the Markov Gate
+                num_inputs = self.genome[index_counter] % 4
+                index_counter += 1
+                num_outputs = self.genome[index_counter] % 4
+                index_counter += 1
+                
+                # Determine the states that the Markov Gate will connect its inputs and outputs to
+                input_state_ids = self.genome[index_counter:index_counter + 4][:self.num_input_states]
+                index_counter += 4
+                output_state_ids = self.genome[index_counter:index_counter + 4][:self.num_output_states]
+                index_counter += 4
+                
+                self.markov_gate_input_ids.append(input_state_ids)
+                self.markov_gate_output_ids.append(output_state_ids)
+                
+                markov_gate = self.genome[index_counter:index_counter + (2 ** self.num_input_states) * (2 ** self.num_output_states)]
+                markov_gate = markov_gate.reshape((2 ** self.num_input_states, 2 ** self.num_output_states))
+                
+                print(markov_gate[0, :])
+                break
+
+            index_counter += 1
 
     def activate_network(self):
         """Activates the Markov Network
@@ -106,14 +137,14 @@ class MarkovNetworkDeterministic(object):
         ----------
         sensory_input: array-like
             An array of integers containing the sensory inputs for the Markov Network
-            len(sensory_input) must be equal to num_sensor_states
+            len(sensory_input) must be equal to num_input_states
 
         Returns
         -------
         None
 
         """
-        if len(sensory_input) != self.num_sensor_states:
+        if len(sensory_input) != self.num_input_states:
             raise ValueError('Invalid number of sensory inputs provided')
         pass
         
@@ -134,5 +165,5 @@ class MarkovNetworkDeterministic(object):
 
 
 if __name__ == '__main__':
-    test = MarkovNetworkDeterministic(2, 4, 2)
-    print(max(test.genome))
+    np.random.seed(29382)
+    test = MarkovNetworkDeterministic(2, 4, 3)
