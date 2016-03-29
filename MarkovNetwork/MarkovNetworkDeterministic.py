@@ -86,34 +86,38 @@ class MarkovNetworkDeterministic(object):
         None
 
         """
-        index_counter = 0
-        while index_counter < len(self.genome) - 2:
+        for index_counter in range(self.genome.shape[0] - 1):
             # Sequence of 42 then 213 indicates a new Markov Gate
             if self.genome[index_counter] == 42 and self.genome[index_counter + 1] == 213:
-                index_counter += 2
+                internal_index_counter = index_counter + 2
                 
                 # Determine the number of inputs and outputs for the Markov Gate
-                num_inputs = self.genome[index_counter] % 4
-                index_counter += 1
-                num_outputs = self.genome[index_counter] % 4
-                index_counter += 1
+                num_inputs = self.genome[internal_index_counter] % 4
+                internal_index_counter += 1
+                num_outputs = self.genome[internal_index_counter] % 4
+                internal_index_counter += 1
+                
+                # Make sure that the genome is long enough to encode this Markov Gate
+                if internal_index_counter + 8 + (2 ** self.num_input_states) * (2 ** self.num_output_states) > self.genome.shape[0]:
+                    print('Genome is too short to encode this Markov Gate -- skipping')
+                    continue
                 
                 # Determine the states that the Markov Gate will connect its inputs and outputs to
-                input_state_ids = self.genome[index_counter:index_counter + 4][:self.num_input_states]
-                index_counter += 4
-                output_state_ids = self.genome[index_counter:index_counter + 4][:self.num_output_states]
-                index_counter += 4
+                input_state_ids = self.genome[internal_index_counter:internal_index_counter + 4][:self.num_input_states]
+                internal_index_counter += 4
+                output_state_ids = self.genome[internal_index_counter:internal_index_counter + 4][:self.num_output_states]
+                internal_index_counter += 4
                 
                 self.markov_gate_input_ids.append(input_state_ids)
                 self.markov_gate_output_ids.append(output_state_ids)
                 
-                markov_gate = self.genome[index_counter:index_counter + (2 ** self.num_input_states) * (2 ** self.num_output_states)]
+                markov_gate = self.genome[internal_index_counter:internal_index_counter + (2 ** self.num_input_states) * (2 ** self.num_output_states)]
                 markov_gate = markov_gate.reshape((2 ** self.num_input_states, 2 ** self.num_output_states))
                 
-                print(markov_gate[0, :])
+                for row_index in range(markov_gate.shape):
+                    row_max = markov_gate[row_index, :].max()
+                    markov_gate[row_index, :] = np.zeros()
                 break
-
-            index_counter += 1
 
     def activate_network(self):
         """Activates the Markov Network
