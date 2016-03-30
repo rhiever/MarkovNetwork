@@ -197,11 +197,3 @@ class MarkovNetwork(object):
 
         """
         return self.states[-self.num_output_states:]
-
-
-if __name__ == '__main__':
-    np.random.seed(29382)
-    test = MarkovNetwork(2, 4, 3, probabilistic=False)
-    test.update_input_states([1, 1])
-    test.activate_network()
-    print(test.get_output_states())
