@@ -1,5 +1,7 @@
 # Markov Network
 
+[![Join the chat at https://gitter.im/rhiever/MarkovNetwork](https://badges.gitter.im/rhiever/MarkovNetwork.svg)](https://gitter.im/rhiever/MarkovNetwork?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Python implementation of Markov Networks for neural computing.
 
 **This project is currently under development and not yet usable. Please revisit the project at a later time for the first release.**
