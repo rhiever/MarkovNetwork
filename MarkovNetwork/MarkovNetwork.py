@@ -111,8 +111,11 @@ class MarkovNetwork(object):
 
                 # Determine the states that the Markov Gate will connect its inputs and outputs to
                 input_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetwork.max_markov_gate_inputs][:self.num_input_states]
+                input_state_ids = np.mod(input_state_ids, self.states.shape[0])
                 internal_index_counter += MarkovNetwork.max_markov_gate_inputs
+
                 output_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetwork.max_markov_gate_outputs][:self.num_output_states]
+                output_state_ids = np.mod(output_state_ids, self.states.shape[0])
                 internal_index_counter += MarkovNetwork.max_markov_gate_outputs
 
                 self.markov_gate_input_ids.append(input_state_ids)
@@ -130,20 +133,35 @@ class MarkovNetwork(object):
 
                 self.markov_gates.append(markov_gate)
 
-    def activate_network(self):
+    def activate_network(self, num_activations=1):
         """Activates the Markov Network
 
         Parameters
         ----------
-        ggg: type (default: ggg)
-            ggg
+        num_activations: int (default: 1)
+            The number of times the Markov Network should be activated
 
         Returns
         -------
         None
 
         """
-        pass
+        original_input_values = self.states[:self.num_input_states]
+        for _ in range(num_activations):
+            for markov_gate, mg_input_ids, mg_output_ids in zip(self.markov_gates, self.markov_gate_input_ids, self.markov_gate_output_ids):
+                # Determine the input values for this Markov Gate
+                mg_input_values = self.states[mg_input_ids]
+                mg_input_index = int(''.join([str(int(val)) for val in mg_input_values]), base=2)
+
+                # Determine the corresponding output values for this Markov Gate
+                roll = np.random.uniform()
+                rolling_sums = np.cumsum(markov_gate[mg_input_index, :])
+                mg_output_index = np.where(rolling_sums >= roll)[0][0]
+                mg_output_values = np.array(list(np.binary_repr(mg_output_index, width=self.num_output_states)), dtype=int)
+                self.states[mg_output_ids] = mg_output_values
+                
+            self.states[:self.num_input_states] = original_input_values
+                
 
     def update_input_states(self, input_values):
         """Updates the input states with the provided inputs
@@ -183,3 +201,5 @@ class MarkovNetwork(object):
 if __name__ == '__main__':
     np.random.seed(29382)
     test = MarkovNetwork(2, 4, 3)
+    test.update_input_states([1, 1])
+    test.activate_network()
