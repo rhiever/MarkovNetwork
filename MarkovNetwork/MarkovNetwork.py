@@ -122,7 +122,8 @@ class MarkovNetwork(object):
                 self.markov_gate_output_ids.append(output_state_ids)
 
                 # Interpret the probability table for the Markov Gate
-                markov_gate = np.copy(self.genome[internal_index_counter:internal_index_counter + (2 ** self.num_input_states) * (2 ** self.num_output_states)])
+                markov_gate = np.copy(self.genome[internal_index_counter:internal_index_counter +
+                                      (2 ** self.num_input_states) * (2 ** self.num_output_states)])
                 markov_gate = markov_gate.reshape((2 ** self.num_input_states, 2 ** self.num_output_states))
 
                 if probabilistic:  # Probabilistic Markov Gates
