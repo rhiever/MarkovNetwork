@@ -32,26 +32,27 @@ class MarkovNetwork(object):
     max_markov_gate_inputs = 4
     max_markov_gate_outputs = 4
 
-    def __init__(self, num_input_states, num_memory_states, num_output_states, num_markov_gates=4, probabilistic=True, genome=None):
-        """Sets up a randomly-generated deterministic Markov Network
+    def __init__(self, num_input_states, num_memory_states, num_output_states, seed_num_markov_gates=4, probabilistic=True, genome=None):
+        """Sets up a Markov Network
 
         Parameters
         ----------
         num_input_states: int
-            The number of sensory input states that the Markov Network will use
+            The number of input states in the Markov Network
         num_memory_states: int
-            The number of internal memory states that the Markov Network will use
+            The number of internal memory states in the Markov Network
         num_output_states: int
-            The number of output states that the Markov Network will use
-        num_markov_gates: int (default: 4)
-            The number of Markov Gates to seed the Markov Network with
+            The number of output states in the Markov Network
+        seed_num_markov_gates: int (default: 4)
+            The number of Markov Gates with which to seed the Markov Network
             It is important to ensure that randomly-generated Markov Networks have at least a few Markov Gates to begin with
+            May sometimes result in fewer Markov Gates if the Markov Gates are randomly seeded in the same location
         probabilistic: bool (default: True)
             Flag indicating whether the Markov Gates are probabilistic or deterministic
-        genome: array-like (optional)
+        genome: array-like (default=None)
             An array representation of the Markov Network to construct
             All values in the array must be integers in the range [0, 255]
-            This option overrides the num_markov_gates option
+            If None, then a random Markov Network will be generated
 
         Returns
         -------
@@ -69,8 +70,8 @@ class MarkovNetwork(object):
         if genome is None:
             self.genome = np.random.randint(0, 256, np.random.randint(1000, 5000)).astype(np.uint8)
 
-            # Seed the random genome with num_markov_gates Markov Gates
-            for _ in range(num_markov_gates):
+            # Seed the random genome with seed_num_markov_gates Markov Gates
+            for _ in range(seed_num_markov_gates):
                 start_index = np.random.randint(0, int(len(self.genome) * 0.8))
                 self.genome[start_index] = 42
                 self.genome[start_index + 1] = 213
@@ -121,6 +122,7 @@ class MarkovNetwork(object):
                 self.markov_gate_input_ids.append(input_state_ids)
                 self.markov_gate_output_ids.append(output_state_ids)
 
+                # Interpret the probability table for the Markov Gate
                 markov_gate = self.genome[internal_index_counter:internal_index_counter + (2 ** self.num_input_states) * (2 ** self.num_output_states)]
                 markov_gate = markov_gate.reshape((2 ** self.num_input_states, 2 ** self.num_output_states))
 
@@ -202,3 +204,4 @@ if __name__ == '__main__':
     test = MarkovNetwork(2, 4, 3, probabilistic=False)
     test.update_input_states([1, 1])
     test.activate_network()
+    print(test.get_output_states())
