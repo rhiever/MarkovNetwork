@@ -23,7 +23,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from __future__ import print_function
 import numpy as np
 
-from ._version import __version__
 
 class MarkovNetwork(object):
 
@@ -99,23 +98,23 @@ class MarkovNetwork(object):
                 internal_index_counter = index_counter + 2
 
                 # Determine the number of inputs and outputs for the Markov Gate
-                num_inputs = self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_inputs
+                num_inputs = max(1, self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_inputs)
                 internal_index_counter += 1
-                num_outputs = self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_outputs
+                num_outputs = max(1, self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_outputs)
                 internal_index_counter += 1
 
                 # Make sure that the genome is long enough to encode this Markov Gate
                 if (internal_index_counter +
-                    (MarkovNetwork.max_markov_gate_inputs + MarkovNetwork.max_markov_gate_outputs) +
-                    (2 ** self.num_input_states) * (2 ** self.num_output_states)) > self.genome.shape[0]:
+                        (MarkovNetwork.max_markov_gate_inputs + MarkovNetwork.max_markov_gate_outputs) +
+                        (2 ** self.num_input_states) * (2 ** self.num_output_states)) > self.genome.shape[0]:
                     continue
 
                 # Determine the states that the Markov Gate will connect its inputs and outputs to
-                input_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetwork.max_markov_gate_inputs][:self.num_input_states]
+                input_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetwork.max_markov_gate_inputs][:num_inputs]
                 input_state_ids = np.mod(input_state_ids, self.states.shape[0])
                 internal_index_counter += MarkovNetwork.max_markov_gate_inputs
 
-                output_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetwork.max_markov_gate_outputs][:self.num_output_states]
+                output_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetwork.max_markov_gate_outputs][:num_outputs]
                 output_state_ids = np.mod(output_state_ids, self.states.shape[0])
                 internal_index_counter += MarkovNetwork.max_markov_gate_outputs
 
@@ -126,9 +125,9 @@ class MarkovNetwork(object):
                 markov_gate = np.copy(self.genome[internal_index_counter:internal_index_counter + (2 ** self.num_input_states) * (2 ** self.num_output_states)])
                 markov_gate = markov_gate.reshape((2 ** self.num_input_states, 2 ** self.num_output_states))
 
-                if probabilistic: # Probabilistic Markov Gates
+                if probabilistic:  # Probabilistic Markov Gates
                     markov_gate = markov_gate.astype(np.float64) / np.sum(markov_gate, axis=1, dtype=np.float64)[:, None]
-                else: # Deterministic Markov Gates
+                else:  # Deterministic Markov Gates
                     row_max_indices = np.argmax(markov_gate, axis=1)
                     markov_gate[:, :] = 0
                     markov_gate[np.arange(len(row_max_indices)), row_max_indices] = 1
@@ -161,7 +160,7 @@ class MarkovNetwork(object):
                 mg_output_index = np.where(rolling_sums >= roll)[0][0]
                 mg_output_values = np.array(list(np.binary_repr(mg_output_index, width=self.num_output_states)), dtype=np.uint8)
                 self.states[mg_output_ids] = mg_output_values
-                
+
             self.states[:self.num_input_states] = original_input_values
 
     def update_input_states(self, input_values):
