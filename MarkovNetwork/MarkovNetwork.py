@@ -61,13 +61,13 @@ class MarkovNetwork(object):
         self.num_input_states = num_input_states
         self.num_memory_states = num_memory_states
         self.num_output_states = num_output_states
-        self.states = np.zeros(num_input_states + num_memory_states + num_output_states)
+        self.states = np.zeros(num_input_states + num_memory_states + num_output_states, dtype=np.bool)
         self.markov_gates = []
         self.markov_gate_input_ids = []
         self.markov_gate_output_ids = []
 
         if genome is None:
-            self.genome = np.random.randint(0, 256, np.random.randint(1000, 5000))
+            self.genome = np.random.randint(0, 256, np.random.randint(1000, 5000)).astype(np.uint8)
 
             # Seed the random genome with num_markov_gates Markov Gates
             for _ in range(num_markov_gates):
@@ -75,7 +75,7 @@ class MarkovNetwork(object):
                 self.genome[start_index] = 42
                 self.genome[start_index + 1] = 213
         else:
-            self.genome = np.array(genome)
+            self.genome = np.array(genome, dtype=np.uint8)
 
         self._setup_markov_network(probabilistic)
 
@@ -128,8 +128,8 @@ class MarkovNetwork(object):
                     markov_gate = markov_gate / np.sum(markov_gate, axis=1)[:, None]
                 else: # Deterministic Markov Gates
                     row_max_indices = np.argmax(markov_gate, axis=1)
-                    markov_gate[:, :] = 0.
-                    markov_gate[np.arange(len(row_max_indices)), row_max_indices] = 1.
+                    markov_gate[:, :] = 0
+                    markov_gate[np.arange(len(row_max_indices)), row_max_indices] = 1
 
                 self.markov_gates.append(markov_gate)
 
@@ -146,7 +146,7 @@ class MarkovNetwork(object):
         None
 
         """
-        original_input_values = self.states[:self.num_input_states]
+        original_input_values = np.copy(self.states[:self.num_input_states])
         for _ in range(num_activations):
             for markov_gate, mg_input_ids, mg_output_ids in zip(self.markov_gates, self.markov_gate_input_ids, self.markov_gate_output_ids):
                 # Determine the input values for this Markov Gate
@@ -161,7 +161,6 @@ class MarkovNetwork(object):
                 self.states[mg_output_ids] = mg_output_values
                 
             self.states[:self.num_input_states] = original_input_values
-                
 
     def update_input_states(self, input_values):
         """Updates the input states with the provided inputs
@@ -200,6 +199,6 @@ class MarkovNetwork(object):
 
 if __name__ == '__main__':
     np.random.seed(29382)
-    test = MarkovNetwork(2, 4, 3)
+    test = MarkovNetwork(2, 4, 3, probabilistic=False)
     test.update_input_states([1, 1])
     test.activate_network()
