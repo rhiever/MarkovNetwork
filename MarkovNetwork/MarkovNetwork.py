@@ -127,7 +127,7 @@ class MarkovNetwork(object):
                 markov_gate = markov_gate.reshape((2 ** self.num_input_states, 2 ** self.num_output_states))
 
                 if probabilistic: # Probabilistic Markov Gates
-                    markov_gate = markov_gate / np.sum(markov_gate, axis=1)[:, None]
+                    markov_gate = markov_gate.astype(np.float64) / np.sum(markov_gate, axis=1, dtype=np.float64)[:, None]
                 else: # Deterministic Markov Gates
                     row_max_indices = np.argmax(markov_gate, axis=1)
                     markov_gate[:, :] = 0
@@ -157,9 +157,9 @@ class MarkovNetwork(object):
 
                 # Determine the corresponding output values for this Markov Gate
                 roll = np.random.uniform()
-                rolling_sums = np.cumsum(markov_gate[mg_input_index, :])
+                rolling_sums = np.cumsum(markov_gate[mg_input_index, :], dtype=np.float64)
                 mg_output_index = np.where(rolling_sums >= roll)[0][0]
-                mg_output_values = np.array(list(np.binary_repr(mg_output_index, width=self.num_output_states)), dtype=int)
+                mg_output_values = np.array(list(np.binary_repr(mg_output_index, width=self.num_output_states)), dtype=np.uint8)
                 self.states[mg_output_ids] = mg_output_values
                 
             self.states[:self.num_input_states] = original_input_values
