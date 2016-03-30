@@ -142,3 +142,7 @@ howpublished={arXiv e-print. http://arxiv.org/abs/1310.6012},
 year={2016}
 }
 ```
+
+You can also cite the repository directly using the following DOI:
+
+[![DOI](https://zenodo.org/badge/20747/rhiever/MarkovNetwork.svg)](https://zenodo.org/badge/latestdoi/20747/rhiever/MarkovNetwork)
