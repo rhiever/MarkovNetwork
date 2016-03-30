@@ -25,14 +25,14 @@ import numpy as np
 
 from ._version import __version__
 
-class MarkovNetworkDeterministic(object):
+class MarkovNetwork(object):
 
-    """A deterministic Markov Network for neural computing."""
+    """A Markov Network for neural computing."""
 
     max_markov_gate_inputs = 4
     max_markov_gate_outputs = 4
 
-    def __init__(self, num_input_states, num_memory_states, num_output_states, num_markov_gates=4, genome=None):
+    def __init__(self, num_input_states, num_memory_states, num_output_states, num_markov_gates=4, probabilistic=True, genome=None):
         """Sets up a randomly-generated deterministic Markov Network
 
         Parameters
@@ -46,6 +46,8 @@ class MarkovNetworkDeterministic(object):
         num_markov_gates: int (default: 4)
             The number of Markov Gates to seed the Markov Network with
             It is important to ensure that randomly-generated Markov Networks have at least a few Markov Gates to begin with
+        probabilistic: bool (default: True)
+            Flag indicating whether the Markov Gates are probabilistic or deterministic
         genome: array-like (optional)
             An array representation of the Markov Network to construct
             All values in the array must be integers in the range [0, 255]
@@ -75,14 +77,15 @@ class MarkovNetworkDeterministic(object):
         else:
             self.genome = np.array(genome)
             
-        self._setup_markov_network()
+        self._setup_markov_network(probabilistic)
 
-    def _setup_markov_network(self):
+    def _setup_markov_network(self, probabilistic):
         """Interprets the internal genome into the corresponding Markov Gates
 
         Parameters
         ----------
-        None
+        probabilistic: bool
+            Flag indicating whether the Markov Gates are probabilistic or deterministic
 
         Returns
         -------
@@ -95,23 +98,22 @@ class MarkovNetworkDeterministic(object):
                 internal_index_counter = index_counter + 2
                 
                 # Determine the number of inputs and outputs for the Markov Gate
-                num_inputs = self.genome[internal_index_counter] % MarkovNetworkDeterministic.max_markov_gate_inputs
+                num_inputs = self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_inputs
                 internal_index_counter += 1
-                num_outputs = self.genome[internal_index_counter] % MarkovNetworkDeterministic.max_markov_gate_outputs
+                num_outputs = self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_outputs
                 internal_index_counter += 1
                 
                 # Make sure that the genome is long enough to encode this Markov Gate
                 if (internal_index_counter +
-                    (MarkovNetworkDeterministic.max_markov_gate_inputs + MarkovNetworkDeterministic.max_markov_gate_outputs) +
+                    (MarkovNetwork.max_markov_gate_inputs + MarkovNetwork.max_markov_gate_outputs) +
                     (2 ** self.num_input_states) * (2 ** self.num_output_states)) > self.genome.shape[0]:
-                    print('Genome is too short to encode this Markov Gate -- skipping')
                     continue
                 
                 # Determine the states that the Markov Gate will connect its inputs and outputs to
-                input_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetworkDeterministic.max_markov_gate_inputs][:self.num_input_states]
-                internal_index_counter += MarkovNetworkDeterministic.max_markov_gate_inputs
-                output_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetworkDeterministic.max_markov_gate_outputs][:self.num_output_states]
-                internal_index_counter += MarkovNetworkDeterministic.max_markov_gate_outputs
+                input_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetwork.max_markov_gate_inputs][:self.num_input_states]
+                internal_index_counter += MarkovNetwork.max_markov_gate_inputs
+                output_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetwork.max_markov_gate_outputs][:self.num_output_states]
+                internal_index_counter += MarkovNetwork.max_markov_gate_outputs
                 
                 self.markov_gate_input_ids.append(input_state_ids)
                 self.markov_gate_output_ids.append(output_state_ids)
@@ -119,11 +121,13 @@ class MarkovNetworkDeterministic(object):
                 markov_gate = self.genome[internal_index_counter:internal_index_counter + (2 ** self.num_input_states) * (2 ** self.num_output_states)]
                 markov_gate = markov_gate.reshape((2 ** self.num_input_states, 2 ** self.num_output_states))
                 
-                for row_index in range(markov_gate.shape[0]):
-                    row_max_index = np.argmax(markov_gate[row_index, :], axis=0)
-                    markov_gate[row_index, :] = np.zeros(markov_gate.shape[1])
-                    markov_gate[row_index, row_max_index] = 1
-                    
+                if probabilistic: # Probabilistic Markov Gates
+                    markov_gate = markov_gate / np.sum(markov_gate, axis=1)[:, None]
+                else: # Deterministic Markov Gates
+                    row_max_indices = np.argmax(markov_gate, axis=1)
+                    markov_gate[:, :] = 0.
+                    markov_gate[np.arange(len(row_max_indices)), row_max_indices] = 1.
+
                 self.markov_gates.append(markov_gate)
 
     def activate_network(self):
@@ -177,4 +181,4 @@ class MarkovNetworkDeterministic(object):
 
 if __name__ == '__main__':
     np.random.seed(29382)
-    test = MarkovNetworkDeterministic(2, 4, 3)
+    test = MarkovNetwork(2, 4, 3)

@@ -21,5 +21,4 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 '''
 
 from ._version import __version__
-from .MarkovNetworkDeterministic import MarkovNetworkDeterministic
-from .MarkovNetworkProbabilistic import MarkovNetworkProbabilistic
+from .MarkovNetwork import MarkovNetwork
