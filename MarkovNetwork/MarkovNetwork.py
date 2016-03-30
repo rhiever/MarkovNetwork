@@ -98,15 +98,15 @@ class MarkovNetwork(object):
                 internal_index_counter = index_counter + 2
 
                 # Determine the number of inputs and outputs for the Markov Gate
-                num_inputs = max(1, self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_inputs)
+                num_inputs = (self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_inputs) + 1
                 internal_index_counter += 1
-                num_outputs = max(1, self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_outputs)
+                num_outputs = (self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_outputs) + 1
                 internal_index_counter += 1
 
                 # Make sure that the genome is long enough to encode this Markov Gate
                 if (internal_index_counter +
                         (MarkovNetwork.max_markov_gate_inputs + MarkovNetwork.max_markov_gate_outputs) +
-                        (2 ** self.num_input_states) * (2 ** self.num_output_states)) > self.genome.shape[0]:
+                        (2 ** num_inputs) * (2 ** num_outputs)) > self.genome.shape[0]:
                     continue
 
                 # Determine the states that the Markov Gate will connect its inputs and outputs to
@@ -122,9 +122,8 @@ class MarkovNetwork(object):
                 self.markov_gate_output_ids.append(output_state_ids)
 
                 # Interpret the probability table for the Markov Gate
-                markov_gate = np.copy(self.genome[internal_index_counter:internal_index_counter +
-                                      (2 ** self.num_input_states) * (2 ** self.num_output_states)])
-                markov_gate = markov_gate.reshape((2 ** self.num_input_states, 2 ** self.num_output_states))
+                markov_gate = np.copy(self.genome[internal_index_counter:internal_index_counter + (2 ** num_inputs) * (2 ** num_outputs)])
+                markov_gate = markov_gate.reshape((2 ** num_inputs, 2 ** num_outputs))
 
                 if probabilistic:  # Probabilistic Markov Gates
                     markov_gate = markov_gate.astype(np.float64) / np.sum(markov_gate, axis=1, dtype=np.float64)[:, None]
