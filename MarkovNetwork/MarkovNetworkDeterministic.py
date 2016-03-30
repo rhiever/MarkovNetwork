@@ -29,6 +29,9 @@ class MarkovNetworkDeterministic(object):
 
     """A deterministic Markov Network for neural computing."""
 
+    max_markov_gate_inputs = 4
+    max_markov_gate_outputs = 4
+
     def __init__(self, num_input_states, num_memory_states, num_output_states, num_markov_gates=4, genome=None):
         """Sets up a randomly-generated deterministic Markov Network
 
@@ -92,21 +95,23 @@ class MarkovNetworkDeterministic(object):
                 internal_index_counter = index_counter + 2
                 
                 # Determine the number of inputs and outputs for the Markov Gate
-                num_inputs = self.genome[internal_index_counter] % 4
+                num_inputs = self.genome[internal_index_counter] % max_markov_gate_inputs
                 internal_index_counter += 1
-                num_outputs = self.genome[internal_index_counter] % 4
+                num_outputs = self.genome[internal_index_counter] % max_markov_gate_outputs
                 internal_index_counter += 1
                 
                 # Make sure that the genome is long enough to encode this Markov Gate
-                if internal_index_counter + 8 + (2 ** self.num_input_states) * (2 ** self.num_output_states) > self.genome.shape[0]:
+                if (internal_index_counter +
+                    (max_markov_gate_inputs + max_markov_gate_outputs) +
+                    (2 ** self.num_input_states) * (2 ** self.num_output_states)) > self.genome.shape[0]:
                     print('Genome is too short to encode this Markov Gate -- skipping')
                     continue
                 
                 # Determine the states that the Markov Gate will connect its inputs and outputs to
-                input_state_ids = self.genome[internal_index_counter:internal_index_counter + 4][:self.num_input_states]
-                internal_index_counter += 4
-                output_state_ids = self.genome[internal_index_counter:internal_index_counter + 4][:self.num_output_states]
-                internal_index_counter += 4
+                input_state_ids = self.genome[internal_index_counter:internal_index_counter + max_markov_gate_inputs][:self.num_input_states]
+                internal_index_counter += max_markov_gate_inputs
+                output_state_ids = self.genome[internal_index_counter:internal_index_counter + max_markov_gate_outputs][:self.num_output_states]
+                internal_index_counter += max_markov_gate_outputs
                 
                 self.markov_gate_input_ids.append(input_state_ids)
                 self.markov_gate_output_ids.append(output_state_ids)
