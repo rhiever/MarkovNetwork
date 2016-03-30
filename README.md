@@ -130,7 +130,7 @@ We welcome you to [check the existing issues](https://github.com/rhiever/MarkovN
 
 ## Citing MarkovNetwork
 
-If you use the MarkovNetwork package as part of your workflow in a scientific publication, please consider citing the following publication that describes Markov Networks.
+If you use the MarkovNetwork package as part of your workflow in a scientific publication, please consider citing the following publication that describes Markov Networks in detail.
 
 Randal S. Olson, David B. Knoester, and Christoph Adami. "Evolution of swarming behavior is shaped by how predators attack." *Artificial Life Journal*, to appear in Spring 2016.
 
