@@ -65,7 +65,7 @@ class MarkovNetwork(object):
         self.markov_gates = []
         self.markov_gate_input_ids = []
         self.markov_gate_output_ids = []
-        
+
         if genome is None:
             self.genome = np.random.randint(0, 256, np.random.randint(1000, 5000))
 
@@ -76,7 +76,7 @@ class MarkovNetwork(object):
                 self.genome[start_index + 1] = 213
         else:
             self.genome = np.array(genome)
-            
+
         self._setup_markov_network(probabilistic)
 
     def _setup_markov_network(self, probabilistic):
@@ -96,31 +96,31 @@ class MarkovNetwork(object):
             # Sequence of 42 then 213 indicates a new Markov Gate
             if self.genome[index_counter] == 42 and self.genome[index_counter + 1] == 213:
                 internal_index_counter = index_counter + 2
-                
+
                 # Determine the number of inputs and outputs for the Markov Gate
                 num_inputs = self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_inputs
                 internal_index_counter += 1
                 num_outputs = self.genome[internal_index_counter] % MarkovNetwork.max_markov_gate_outputs
                 internal_index_counter += 1
-                
+
                 # Make sure that the genome is long enough to encode this Markov Gate
                 if (internal_index_counter +
                     (MarkovNetwork.max_markov_gate_inputs + MarkovNetwork.max_markov_gate_outputs) +
                     (2 ** self.num_input_states) * (2 ** self.num_output_states)) > self.genome.shape[0]:
                     continue
-                
+
                 # Determine the states that the Markov Gate will connect its inputs and outputs to
                 input_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetwork.max_markov_gate_inputs][:self.num_input_states]
                 internal_index_counter += MarkovNetwork.max_markov_gate_inputs
                 output_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetwork.max_markov_gate_outputs][:self.num_output_states]
                 internal_index_counter += MarkovNetwork.max_markov_gate_outputs
-                
+
                 self.markov_gate_input_ids.append(input_state_ids)
                 self.markov_gate_output_ids.append(output_state_ids)
-                
+
                 markov_gate = self.genome[internal_index_counter:internal_index_counter + (2 ** self.num_input_states) * (2 ** self.num_output_states)]
                 markov_gate = markov_gate.reshape((2 ** self.num_input_states, 2 ** self.num_output_states))
-                
+
                 if probabilistic: # Probabilistic Markov Gates
                     markov_gate = markov_gate / np.sum(markov_gate, axis=1)[:, None]
                 else: # Deterministic Markov Gates
@@ -145,24 +145,25 @@ class MarkovNetwork(object):
         """
         pass
 
-    def update_sensor_states(self, sensory_input):
-        """Updates the sensor states with the provided sensory inputs
+    def update_input_states(self, input_values):
+        """Updates the input states with the provided inputs
 
         Parameters
         ----------
-        sensory_input: array-like
-            An array of integers containing the sensory inputs for the Markov Network
-            len(sensory_input) must be equal to num_input_states
+        input_values: array-like
+            An array of integers containing the inputs for the Markov Network
+            len(input_values) must be equal to num_input_states
 
         Returns
         -------
         None
 
         """
-        if len(sensory_input) != self.num_input_states:
-            raise ValueError('Invalid number of sensory inputs provided')
-        pass
-        
+        if len(input_values) != self.num_input_states:
+            raise ValueError('Invalid number of input values provided')
+
+        self.states[:self.num_input_states] = input_values
+
     def get_output_states(self):
         """Returns an array of the current output state's values
 
