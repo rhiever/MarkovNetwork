@@ -2,6 +2,8 @@
 
 Python implementation of Markov Networks for neural computing.
 
+**This project is currently under development and not yet usable. Please revisit the project at a later time for the first release.**
+
 ## License
 
 Please see the [repository license](https://github.com/rhiever/MarkovNetwork/blob/master/LICENSE) for the licensing and usage information for datacleaner.
