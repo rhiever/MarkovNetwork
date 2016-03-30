@@ -95,23 +95,23 @@ class MarkovNetworkDeterministic(object):
                 internal_index_counter = index_counter + 2
                 
                 # Determine the number of inputs and outputs for the Markov Gate
-                num_inputs = self.genome[internal_index_counter] % max_markov_gate_inputs
+                num_inputs = self.genome[internal_index_counter] % MarkovNetworkDeterministic.max_markov_gate_inputs
                 internal_index_counter += 1
-                num_outputs = self.genome[internal_index_counter] % max_markov_gate_outputs
+                num_outputs = self.genome[internal_index_counter] % MarkovNetworkDeterministic.max_markov_gate_outputs
                 internal_index_counter += 1
                 
                 # Make sure that the genome is long enough to encode this Markov Gate
                 if (internal_index_counter +
-                    (max_markov_gate_inputs + max_markov_gate_outputs) +
+                    (MarkovNetworkDeterministic.max_markov_gate_inputs + MarkovNetworkDeterministic.max_markov_gate_outputs) +
                     (2 ** self.num_input_states) * (2 ** self.num_output_states)) > self.genome.shape[0]:
                     print('Genome is too short to encode this Markov Gate -- skipping')
                     continue
                 
                 # Determine the states that the Markov Gate will connect its inputs and outputs to
-                input_state_ids = self.genome[internal_index_counter:internal_index_counter + max_markov_gate_inputs][:self.num_input_states]
-                internal_index_counter += max_markov_gate_inputs
-                output_state_ids = self.genome[internal_index_counter:internal_index_counter + max_markov_gate_outputs][:self.num_output_states]
-                internal_index_counter += max_markov_gate_outputs
+                input_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetworkDeterministic.max_markov_gate_inputs][:self.num_input_states]
+                internal_index_counter += MarkovNetworkDeterministic.max_markov_gate_inputs
+                output_state_ids = self.genome[internal_index_counter:internal_index_counter + MarkovNetworkDeterministic.max_markov_gate_outputs][:self.num_output_states]
+                internal_index_counter += MarkovNetworkDeterministic.max_markov_gate_outputs
                 
                 self.markov_gate_input_ids.append(input_state_ids)
                 self.markov_gate_output_ids.append(output_state_ids)
@@ -119,9 +119,12 @@ class MarkovNetworkDeterministic(object):
                 markov_gate = self.genome[internal_index_counter:internal_index_counter + (2 ** self.num_input_states) * (2 ** self.num_output_states)]
                 markov_gate = markov_gate.reshape((2 ** self.num_input_states, 2 ** self.num_output_states))
                 
-                for row_index in range(markov_gate.shape):
-                    row_max = markov_gate[row_index, :].max()
-                    markov_gate[row_index, :] = np.zeros()
+                for row_index in range(markov_gate.shape[0]):
+                    row_max_index = np.argmax(markov_gate[row_index, :], axis=0)
+                    markov_gate[row_index, :] = np.zeros(markov_gate.shape[1])
+                    markov_gate[row_index, row_max_index] = 1
+                    
+                print(markov_gate)
                 break
 
     def activate_network(self):
