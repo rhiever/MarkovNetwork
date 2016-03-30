@@ -25,8 +25,8 @@ import numpy as np
 from MarkovNetwork import MarkovNetwork
 
 def test_init():
-    """Ensure that the Markov Network initilizer works"""
-    
+    """MarkovNetwork initializer"""
+    np.random.seed(3938472)
     test_mn = MarkovNetwork(num_input_states=4,
                             num_memory_states=5,
                             num_output_states=6,
@@ -41,3 +41,49 @@ def test_init():
     assert len(test_mn.markov_gates) == 2
     assert np.max([len(x) for x in test_mn.markov_gate_input_ids]) <= MarkovNetwork.max_markov_gate_inputs
     assert np.max([len(x) for x in test_mn.markov_gate_output_ids]) <= MarkovNetwork.max_markov_gate_outputs
+
+def test_activate_network():
+    """MarkovNetwork.activate()"""
+    np.random.seed(98342)
+    test_mn = MarkovNetwork(2, 4, 2)
+    test_mn.states[0:2] = np.array([1, 1])
+    test_mn.activate_network()
+    assert np.all(test_mn.states[-2:] == np.array([0, 1]))
+
+def test_activate_network_bad_input():
+    """MarkovNetwork.activate() with bad input"""
+    np.random.seed(98342)
+    test_mn = MarkovNetwork(2, 4, 2)
+    test_mn.states[0:2] = np.array([-7, 2])
+    test_mn.activate_network()
+    assert np.all(test_mn.states[-2:] == np.array([0, 1]))
+
+def test_update_input_states():
+    """MarkovNetwork.test_update_input_states()"""
+    np.random.seed(98342)
+    test_mn = MarkovNetwork(2, 4, 2)
+    test_mn.update_input_states([1, 1])
+    assert np.all(test_mn.states[:2] == np.array([1, 1]))
+
+def test_update_input_states_bad_input():
+    """MarkovNetwork.test_update_input_states() with bad input"""
+    np.random.seed(98342)
+    test_mn = MarkovNetwork(2, 4, 2)
+    test_mn.update_input_states([-7, 2])
+    assert np.all(test_mn.states[:2] == np.array([1, 1]))
+
+def test_get_output_states():
+    """MarkovNetwork.get_output_states()"""
+    np.random.seed(98342)
+    test_mn = MarkovNetwork(2, 4, 2)
+    test_mn.update_input_states([1, 1])
+    test_mn.activate_network()
+    assert np.all(test_mn.get_output_states() == np.array([0, 1]))
+
+def test_get_output_states_bad_input():
+    """MarkovNetwork.get_output_states() with bad input"""
+    np.random.seed(98342)
+    test_mn = MarkovNetwork(2, 4, 2)
+    test_mn.update_input_states([-7, 2])
+    test_mn.activate_network()
+    assert np.all(test_mn.get_output_states() == np.array([0, 1]))
