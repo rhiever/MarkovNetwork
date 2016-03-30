@@ -42,6 +42,37 @@ def test_init():
     assert np.max([len(x) for x in test_mn.markov_gate_input_ids]) <= MarkovNetwork.max_markov_gate_inputs
     assert np.max([len(x) for x in test_mn.markov_gate_output_ids]) <= MarkovNetwork.max_markov_gate_outputs
 
+def test_init_seed_genome():
+    """MarkovNetwork initializer with seeded genome"""
+    np.random.seed(4303423)
+    seed_genome = np.random.randint(0, 256, 10000)
+    seed_genome[0:2] = np.array([42, 213])
+
+    test_mn = MarkovNetwork(num_input_states=4,
+                            num_memory_states=5,
+                            num_output_states=6,
+                            probabilistic=False,
+                            genome=seed_genome)
+
+    assert np.all(test_mn.genome == seed_genome)
+    assert len(test_mn.markov_gates) == 1
+
+def test_init_seed_bad_genome():
+    """MarkovNetwork initializer with bad seeded genome"""
+    np.random.seed(4303423)
+    seed_genome = np.random.randint(0, 256, 10000)
+    seed_genome[0:2] = np.array([42, 213])
+    seed_genome[-10:-8] = np.array([42, 213])
+
+    test_mn = MarkovNetwork(num_input_states=4,
+                            num_memory_states=5,
+                            num_output_states=6,
+                            probabilistic=False,
+                            genome=seed_genome)
+
+    assert np.all(test_mn.genome == seed_genome)
+    assert len(test_mn.markov_gates) == 1
+
 def test_activate_network():
     """MarkovNetwork.activate()"""
     np.random.seed(98342)
@@ -71,6 +102,15 @@ def test_update_input_states_bad_input():
     test_mn = MarkovNetwork(2, 4, 2)
     test_mn.update_input_states([-7, 2])
     assert np.all(test_mn.states[:2] == np.array([1, 1]))
+
+def test_update_input_states_invalid_input():
+    """MarkovNetwork.test_update_input_states() with invalid input"""
+    np.random.seed(98342)
+    test_mn = MarkovNetwork(2, 4, 2)
+    try:
+        test_mn.update_input_states([1, 1, 0])
+    except Exception as e:
+        assert type(e) is ValueError
 
 def test_get_output_states():
     """MarkovNetwork.get_output_states()"""
