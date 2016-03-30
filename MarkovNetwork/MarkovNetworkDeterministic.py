@@ -124,8 +124,7 @@ class MarkovNetworkDeterministic(object):
                     markov_gate[row_index, :] = np.zeros(markov_gate.shape[1])
                     markov_gate[row_index, row_max_index] = 1
                     
-                print(markov_gate)
-                break
+                self.markov_gates.append(markov_gate)
 
     def activate_network(self):
         """Activates the Markov Network
