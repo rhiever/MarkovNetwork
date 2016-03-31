@@ -159,7 +159,7 @@ class MarkovNetwork(object):
                 rolling_sums = np.cumsum(markov_gate[mg_input_index, :], dtype=np.float64)
                 mg_output_index = np.where(rolling_sums >= roll)[0][0]
                 mg_output_values = np.array(list(np.binary_repr(mg_output_index, width=self.num_output_states)), dtype=np.uint8)
-                self.states[mg_output_ids] = mg_output_values
+                self.states[mg_output_ids] = np.bitwise_or(self.states[mg_output_ids], mg_output_values)
 
             self.states[:self.num_input_states] = original_input_values
 
