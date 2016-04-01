@@ -127,6 +127,8 @@ class MarkovNetwork(object):
 
                 if probabilistic:  # Probabilistic Markov Gates
                     markov_gate = markov_gate.astype(np.float64) / np.sum(markov_gate, axis=1, dtype=np.float64)[:, None]
+                    # Precompute the cumulative sums for the activation function
+                    markov_gate = np.cumsum(markov_gate, axis=1, dtype=np.float64)
                 else:  # Deterministic Markov Gates
                     row_max_indices = np.argmax(markov_gate, axis=1)
                     markov_gate[:, :] = 0
@@ -156,8 +158,7 @@ class MarkovNetwork(object):
 
                 # Determine the corresponding output values for this Markov Gate
                 roll = np.random.uniform()
-                rolling_sums = np.cumsum(markov_gate[mg_input_index, :], dtype=np.float64)
-                mg_output_index = np.where(rolling_sums >= roll)[0][0]
+                mg_output_index = np.where(markov_gate[mg_input_index, :] >= roll)[0][0]
                 mg_output_values = np.array(list(np.binary_repr(mg_output_index, width=self.num_output_states)), dtype=np.uint8)
                 self.states[mg_output_ids] = np.bitwise_or(self.states[mg_output_ids], mg_output_values)
 
