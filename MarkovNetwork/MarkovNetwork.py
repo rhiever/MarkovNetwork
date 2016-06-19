@@ -165,7 +165,7 @@ class MarkovNetwork(object):
                 # Determine the corresponding output values for this Markov Gate
                 roll = np.random.uniform()
                 mg_output_index = np.where(markov_gate[mg_input_index, :] >= roll)[0][0]
-                mg_output_values = np.array(list(np.binary_repr(mg_output_index, width=self.num_output_states)), dtype=np.uint8)
+                mg_output_values = np.array(list(np.binary_repr(mg_output_index, width=len(mg_output_ids))), dtype=np.uint8)
                 self.states[mg_output_ids] = np.bitwise_or(self.states[mg_output_ids], mg_output_values)
 
             self.states[:self.num_input_states] = original_input_values
