@@ -31,7 +31,9 @@ class MarkovNetwork(object):
     max_markov_gate_inputs = 4
     max_markov_gate_outputs = 4
 
-    def __init__(self, num_input_states, num_memory_states, num_output_states, seed_num_markov_gates=4, probabilistic=True, genome=None):
+    def __init__(self, num_input_states, num_memory_states, num_output_states,
+                 random_genome_length=10000, seed_num_markov_gates=4,
+                 probabilistic=True, genome=None):
         """Sets up a Markov Network
 
         Parameters
@@ -42,13 +44,17 @@ class MarkovNetwork(object):
             The number of internal memory states in the Markov Network
         num_output_states: int
             The number of output states in the Markov Network
+        random_genome_length: int (default: 10000)
+            Length of the genome if it is being randomly generated
+            This parameter is ignored if "genome" is not None
         seed_num_markov_gates: int (default: 4)
             The number of Markov Gates with which to seed the Markov Network
             It is important to ensure that randomly-generated Markov Networks have at least a few Markov Gates to begin with
             May sometimes result in fewer Markov Gates if the Markov Gates are randomly seeded in the same location
+            This parameter is ignored if "genome" is not None
         probabilistic: bool (default: True)
             Flag indicating whether the Markov Gates are probabilistic or deterministic
-        genome: array-like (default=None)
+        genome: array-like (default: None)
             An array representation of the Markov Network to construct
             All values in the array must be integers in the range [0, 255]
             If None, then a random Markov Network will be generated
@@ -67,7 +73,7 @@ class MarkovNetwork(object):
         self.markov_gate_output_ids = []
 
         if genome is None:
-            self.genome = np.random.randint(0, 256, np.random.randint(10000, 20000)).astype(np.uint8)
+            self.genome = np.random.randint(0, 256, random_genome_length).astype(np.uint8)
 
             # Seed the random genome with seed_num_markov_gates Markov Gates
             for _ in range(seed_num_markov_gates):
@@ -159,7 +165,7 @@ class MarkovNetwork(object):
                 # Determine the corresponding output values for this Markov Gate
                 roll = np.random.uniform()
                 mg_output_index = np.where(markov_gate[mg_input_index, :] >= roll)[0][0]
-                mg_output_values = np.array(list(np.binary_repr(mg_output_index, width=self.num_output_states)), dtype=np.uint8)
+                mg_output_values = np.array(list(np.binary_repr(mg_output_index, width=len(mg_output_ids))), dtype=np.uint8)
                 self.states[mg_output_ids] = np.bitwise_or(self.states[mg_output_ids], mg_output_values)
 
             self.states[:self.num_input_states] = original_input_values
