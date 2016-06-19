@@ -39,13 +39,17 @@ num_memory_states: int (required)
     The number of internal memory states in the Markov Network
 num_output_states: int (required)
     The number of output states in the Markov Network
+random_genome_length: int (default: 10000)
+    Length of the genome if it is being randomly generated
+    This parameter is ignored if "genome" is not None
 seed_num_markov_gates: int (default: 4)
     The number of Markov Gates with which to seed the Markov Network
     It is important to ensure that randomly-generated Markov Networks have at least a few Markov Gates to begin with
     May sometimes result in fewer Markov Gates if the Markov Gates are randomly seeded in the same location
+    This parameter is ignored if "genome" is not None
 probabilistic: bool (default: True)
     Flag indicating whether the Markov Gates are probabilistic or deterministic
-genome: array-like (default=None)
+genome: array-like (default: None)
     An array representation of the Markov Network to construct
     All values in the array must be integers in the range [0, 255]
     If None, then a random Markov Network will be generated
@@ -59,6 +63,7 @@ from MarkovNetwork import MarkovNetwork
 my_mn = MarkovNetwork(num_input_states=2,
                       num_memory_states=4,
                       num_output_states=2,
+                      random_genome_length=8000,
                       seed_num_markov_gates=5,
                       probabilistic=False)
 
@@ -75,6 +80,7 @@ from MarkovNetwork import MarkovNetwork
 my_mn = MarkovNetwork(num_input_states=2,
                       num_memory_states=4,
                       num_output_states=2,
+                      random_genome_length=8000,
                       seed_num_markov_gates=5,
                       probabilistic=False)
 
@@ -95,6 +101,7 @@ from MarkovNetwork import MarkovNetwork
 my_mn = MarkovNetwork(num_input_states=2,
                       num_memory_states=4,
                       num_output_states=2,
+                      random_genome_length=8000,
                       seed_num_markov_gates=5,
                       probabilistic=False)
 
