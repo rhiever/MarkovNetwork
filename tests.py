@@ -30,14 +30,17 @@ def test_init():
     test_mn = MarkovNetwork(num_input_states=4,
                             num_memory_states=5,
                             num_output_states=6,
+                            random_genome_length=8000,
                             seed_num_markov_gates=2,
                             probabilistic=False,
                             genome=None)
+
 
     assert test_mn.num_input_states == 4
     assert test_mn.num_memory_states == 5
     assert test_mn.num_output_states == 6
     assert len(test_mn.states) == 4+5+6
+    assert len(test_mn.genome) == 8000
     assert len(test_mn.markov_gates) == 2
     assert np.max([len(x) for x in test_mn.markov_gate_input_ids]) <= MarkovNetwork.max_markov_gate_inputs
     assert np.max([len(x) for x in test_mn.markov_gate_output_ids]) <= MarkovNetwork.max_markov_gate_outputs
@@ -79,7 +82,6 @@ def test_activate_network():
     test_mn = MarkovNetwork(2, 4, 2)
     test_mn.states[0:2] = np.array([1, 1])
     test_mn.activate_network()
-    print(test_mn.states[-2:])
     assert np.all(test_mn.states[-2:] == np.array([1, 0]))
 
 def test_activate_network_bad_input():
