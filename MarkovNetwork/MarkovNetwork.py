@@ -202,4 +202,4 @@ class MarkovNetwork(object):
             An array of the current output state's values
 
         """
-        return self.states[-self.num_output_states:]
+        return np.array(self.states[-self.num_output_states:])
