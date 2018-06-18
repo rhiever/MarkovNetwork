@@ -155,56 +155,39 @@ class MarkovNetwork(object):
         None
 
         """
-        n_iter = len(self.markov_gates)
-
         # Save original input values
         original_input_values = np.copy(self.states[:self.num_input_states])
+        for _ in range(num_activations):
+            for markov_gate, mg_input_ids, mg_output_ids in zip(self.markov_gates, self.markov_gate_input_ids,
+                                                                self.markov_gate_output_ids):
 
-        for _ in range(num_activations):  # Cython loop goes faster without the 'zip()'
-            for i in range(n_iter):
-                # Populate variables with iteration values
-                markov_gate = self.markov_gates[i]
-                mg_input_ids = self.markov_gate_input_ids[i]
-                mg_output_ids = self.markov_gate_output_ids[i]
-
-                # Prepares to loop on mg_input_ids
-                len_arr = mg_input_ids.shape[0]
-                mg_input_index = 0
-                marker = 1
-
+                mg_input_index, marker = 0, 1
                 # Create an integer from bytes representation (loop is faster than previous implementation)
-                for i in range(len_arr):
-                    if self.states[mg_input_ids[len_arr - i - 1]]:
-                        tmp = mg_input_index + marker
-                        mg_input_index = tmp
-                    tmp2 = marker * 2
-                    marker = tmp2
+                for mg_input_id in reversed(mg_input_ids):
+                    if self.states[mg_input_id]:
+                        mg_input_index += marker
+                    marker = marker * 2
 
                 # Determine the corresponding output values for this Markov Gate
                 roll = np.random.uniform()  # sets a roll value
-                markov_gate_x = markov_gate[mg_input_index]  # selects a Markov Gate subarray
-
-                # Prepare to loop on markov_ gates
-                len_arr = markov_gate_x.shape[0]
+                markov_gate_subarray = markov_gate[mg_input_index]  # selects a Markov Gate subarray
 
                 # Searches for the first value where markov_gate > roll
-                for i in range(len_arr):
-                    if markov_gate_x[i] >= roll:
+                for i, markov_gate_element in enumerate(markov_gate_subarray):
+                    if markov_gate_element >= roll:
                         mg_output_index = i
                         break
 
                 # Converts the index into a string of '1's and '0's (binary representation)
                 mg_output_values = bin(mg_output_index)  # bin() is much faster than np.binaryrepr()
 
-                # Prepares to loop through 'mg_output_values'
-                tmp = mg_output_ids.shape[0]
-                len_arr = len(mg_output_values) - 2
-                tmp2 = tmp - len_arr
+                # diff_len deals with the lack of the width argument there was on np.binaryrepr()
+                diff_len = mg_output_ids.shape[0] - (len(mg_output_values) - 2)
 
                 # Loops through 'mg_output_values' and alter 'self.states'
-                for i in range(len_arr):
-                    if mg_output_values[i + 2] == '1':
-                        self.states[mg_output_ids[i + tmp2]] = True
+                for i, mg_output_value in enumerate(mg_output_values[2:]):
+                    if mg_output_value == '1':
+                        self.states[mg_output_ids[i + diff_len]] = True
 
             # Replace original input values
             self.states[:self.num_input_states] = original_input_values
