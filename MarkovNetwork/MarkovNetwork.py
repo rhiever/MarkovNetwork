@@ -166,7 +166,7 @@ class MarkovNetwork(object):
                 for mg_input_id in reversed(mg_input_ids):
                     if self.states[mg_input_id]:
                         mg_input_index += marker
-                    marker = marker * 2
+                    marker *= 2
 
                 # Determine the corresponding output values for this Markov Gate
                 roll = np.random.uniform()  # sets a roll value
