@@ -158,6 +158,8 @@ class MarkovNetwork(object):
         # Save original input values
         original_input_values = np.copy(self.states[:self.num_input_states])
         for _ in range(num_activations):
+            # NOTE: This routine can be refactored to use NumPy if larger MNs are being used
+            # See implementation at https://github.com/rhiever/MarkovNetwork/blob/a381aa9919bb6898b56f678e08127ba6e0eef98f/MarkovNetwork/MarkovNetwork.py#L162:L169
             for markov_gate, mg_input_ids, mg_output_ids in zip(self.markov_gates, self.markov_gate_input_ids,
                                                                 self.markov_gate_output_ids):
 
