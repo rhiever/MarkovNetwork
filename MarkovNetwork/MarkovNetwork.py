@@ -67,13 +67,13 @@ class MarkovNetwork(object):
         self.num_input_states = num_input_states
         self.num_memory_states = num_memory_states
         self.num_output_states = num_output_states
-        self.states = np.zeros(num_input_states + num_memory_states + num_output_states, dtype=np.bool)
+        self.states = np.zeros(num_input_states + num_memory_states + num_output_states, dtype=bool)
         self.markov_gates = []
         self.markov_gate_input_ids = []
         self.markov_gate_output_ids = []
 
         if genome is None:
-            self.genome = np.random.randint(0, 256, random_genome_length).astype(np.uint8)
+            self.genome = np.random.randint(0, 256, random_genome_length).astype(np.uint32)
 
             # Seed the random genome with seed_num_markov_gates Markov Gates
             for _ in range(seed_num_markov_gates):
@@ -81,7 +81,7 @@ class MarkovNetwork(object):
                 self.genome[start_index] = 42
                 self.genome[start_index + 1] = 213
         else:
-            self.genome = np.array(genome, dtype=np.uint8)
+            self.genome = np.array(genome, dtype=np.uint32)
 
         self._setup_markov_network(probabilistic)
 
